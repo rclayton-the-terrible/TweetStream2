@@ -1,0 +1,18 @@
+!!!
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style2.css')
+    link(rel='stylesheet', href='/stylesheets/screen.css', type='text/css', media='screen, projection')
+    link(rel='stylesheet', href='/stylesheets/print.css', type='text/css', media='print')
+    script(type='text/javascript', src='/javascripts/jquery-1.7.2.min.js')
+    script(type='text/javascript', src='/javascripts/underscore-min.js')
+    script(type='text/javascript', src='/javascripts/backbone-min.js')
+    script(type='text/javascript', src='/javascripts/socket.io/socket.io.min.js')
+    script(type='text/javascript', src='http://maps.googleapis.com/maps/api/js?key=AIzaSyDBUCv3-EZIEev3xDKFPwiD9aRkgrWOO5I&sensor=false')
+    script(type='text/javascript', src='/javascripts/highcharts.js')
+    script(type='text/javascript', src='/javascripts/modules/exporting.js')
+    script(type='text/javascript', src='/javascripts/tweetstream.js')
+    script(type='text/javascript', src='/javascripts/topitems.js')
+    script(type='text/javascript', src='/javascripts/incoming.js')
+  body.bodyoverride!= body
