@@ -1,7 +1,7 @@
 (function() {
 
   $(function() {
-    var limit, socket, transformToObject, updateClockTime, updateTwitterMode;
+    var calculatePercentage, limit, socket, sortByCountDescending, transformAggregates, transformRetweets, transformToObject, updateClockTime, updateTwitterMode;
     window.socket = socket = io.connect("http://localhost:3000");
     socket.on("com.berico.tweetstream.TwitterStreamMode", function(data) {
       var twitterMode;
@@ -24,6 +24,20 @@
           return window.opinionLeaderView.sync(listOfWords);
       }
     });
+    socket.on("com.berico.tweetstream.retweet.TopRetweets", function(data) {
+      var retweetContainer, sortedRetweets;
+      retweetContainer = $.parseJSON(data);
+      sortedRetweets = transformRetweets(retweetContainer);
+      console.dir(sortedRetweets);
+      return window.topRetweetsView.sync(sortedRetweets);
+    });
+    socket.on("com.berico.tweetstream.handlers.TopicMatchAggregateSet", function(data) {
+      var aggregateSet, sortedAggregates;
+      aggregateSet = $.parseJSON(data);
+      sortedAggregates = transformAggregates(aggregateSet);
+      console.dir(sortedAggregates);
+      return window.topNewsMatchersView.sync(sortedAggregates);
+    });
     updateClockTime = function(tweet) {
       return ($("#clocktime")).html(tweet.timeOfTweet);
     };
@@ -33,11 +47,9 @@
       $keywords = $("#filterkeywords");
       $locations = $("#filterlocations");
       if (twitterMode.mode === "Sample") {
-        console.log("true");
         $keywords.html("2% of all Tweets");
         return $locations.html("Entire Globe");
       } else {
-        console.log("false");
         $keywords.html("");
         $locations.html("");
         count = 0;
@@ -68,6 +80,21 @@
         return _results;
       }
     };
+    transformRetweets = function(retweetContainer) {
+      var rows, tweet, _i, _len, _ref;
+      rows = [];
+      _ref = retweetContainer.topRetweets;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tweet = _ref[_i];
+        rows.push({
+          text: tweet.message,
+          count: tweet.retweetCount,
+          user: tweet.user.userId,
+          time: tweet.timeOfTweet
+        });
+      }
+      return sortByCountDescending(rows);
+    };
     transformToObject = function(topNWords) {
       var c, rows, w, _ref;
       rows = [];
@@ -79,16 +106,41 @@
           count: c
         });
       }
-      return _.sortBy(rows, function(row) {
-        return row.count * -1;
-      });
+      return sortByCountDescending(rows);
     };
-    return limit = function(coord) {
+    transformAggregates = function(aggregateContainer) {
+      var aggregate, rows, _i, _len, _ref;
+      rows = [];
+      _ref = aggregateContainer.topicMatchAggregates;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        aggregate = _ref[_i];
+        rows.push({
+          description: aggregate.description,
+          count: aggregate.numberOfTopicMatches,
+          total: aggregate.numberOfItemsSeen,
+          percentage: calculatePercentage(aggregate)
+        });
+      }
+      return sortByCountDescending(rows);
+    };
+    calculatePercentage = function(aggregate) {
+      var denominator, numerator, value;
+      denominator = aggregate.numberOfItemsSeen > 0 ? aggregate.numberOfItemsSeen : -1;
+      numerator = aggregate.numberOfTopicMatches;
+      value = denominator === -1 ? 0 : numerator / denominator;
+      return limit(value + "");
+    };
+    limit = function(coord) {
       if (coord.length > 6) {
         return coord.substring(0, 5);
       } else {
         return coord;
       }
+    };
+    return sortByCountDescending = function(rows) {
+      return _.sortBy(rows, function(row) {
+        return row.count * -1;
+      });
     };
   });
 

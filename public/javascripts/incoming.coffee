@@ -16,11 +16,30 @@ $(()->
 
     topN = $.parseJSON data
 
-    listOfWords = transformToObject(topN)
+    listOfWords = transformToObject topN
 
     switch topN.source
        when "tweet.words" then window.topWordsView.sync(listOfWords)
        when "tweet.mentioned" then window.opinionLeaderView.sync(listOfWords)
+  )
+
+  socket.on("com.berico.tweetstream.retweet.TopRetweets", (data) ->
+
+      retweetContainer = $.parseJSON data
+
+      sortedRetweets = transformRetweets retweetContainer
+      console.dir sortedRetweets
+      window.topRetweetsView.sync sortedRetweets
+    )
+
+  socket.on("com.berico.tweetstream.handlers.TopicMatchAggregateSet", (data) ->
+
+    aggregateSet = $.parseJSON data
+
+    sortedAggregates = transformAggregates aggregateSet
+    console.dir sortedAggregates
+
+    window.topNewsMatchersView.sync sortedAggregates
   )
 
   updateClockTime = (tweet) ->
@@ -32,12 +51,10 @@ $(()->
     $locations = ($ "#filterlocations")
 
     if twitterMode.mode is "Sample"
-      console.log "true"
       $keywords.html "2% of all Tweets"
       $locations.html "Entire Globe"
 
     else
-      console.log "false"
       $keywords.html ""
       $locations.html ""
 
@@ -63,17 +80,41 @@ $(()->
         lat = limit(location[1] + "")
         $locations.append "#{lat}, #{lon}<br />"
 
-  transformToObject = (topNWords) ->
+  transformRetweets = (retweetContainer) ->
+    rows = []
+    for tweet in retweetContainer.topRetweets
+      rows.push { text: tweet.message, count: tweet.retweetCount, user: tweet.user.userId, time: tweet.timeOfTweet }
+    sortByCountDescending rows
 
+  transformToObject = (topNWords) ->
     rows = []
     for w, c of topNWords.topWords
       rows.push { title: w, count: c }
+    sortByCountDescending rows
 
-    _.sortBy(rows, (row) ->
-        row.count * -1)
+    #{ "description": "None", "count": 0, "percentage": 0, "total": 0}
+  transformAggregates = (aggregateContainer) ->
+    rows = []
+    for aggregate in aggregateContainer.topicMatchAggregates
+      rows.push {
+        description: aggregate.description,
+        count: aggregate.numberOfTopicMatches,
+        total: aggregate.numberOfItemsSeen,
+        percentage: calculatePercentage(aggregate) }
+    sortByCountDescending rows
+
+  calculatePercentage = (aggregate) ->
+    denominator = if aggregate.numberOfItemsSeen > 0 then aggregate.numberOfItemsSeen else -1
+    numerator = aggregate.numberOfTopicMatches
+    value = if denominator is -1 then 0 else (numerator / denominator)
+    limit value + ""
 
   limit = (coord)->
     if coord.length > 6 then coord.substring(0, 5) else coord
+
+  sortByCountDescending = (rows) ->
+    _.sortBy(rows, (row) ->
+            row.count * -1)
 
 
 )

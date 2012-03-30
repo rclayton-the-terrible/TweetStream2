@@ -6,7 +6,8 @@
     background-color: #dfdfdf;
     background-repeat: no-repeat;
     font-family: Helvetica;
-    overflow: hidden;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 /* Let's get this party started */
@@ -124,12 +125,65 @@
 
 .linebreaker {
     width: 100%;
-    line-height: 6px;
+    line-height: 3px;
     border-bottom: 1px dashed #999999;
 }
 
 .norm {
     font-size: 16px;
+    font-style: italic;
+    color: #999999;
+}
+
+.user {
+    color: #999999;
+}
+
+.newstopic {
+    font-size: 12px;
+    font-style: italic;
+    color: #777777;
+}
+
+.newsbottom {
+    width: 100%;
+    font-size: 10px;
+}
+
+.percentlinebg {
+    margin-top: 6px;
+    background-color: #aaaaaa;
+    width: 100%;
+    font-size: 10px;
+}
+
+.percentline {
+    background-color: #58b1ce;
+    line-height: 8px;
+}
+
+.percentvalue {
+    color: #aaaaaa;
+    font-style: normal;
+    width: 60%;
+}
+
+.totaltweets {
+    text-align: right;
+    font-weight: bold;
+    color: #58b1ce;
+    font-style: normal;
+    width: 40%;
+}
+
+.tweet {
+    font-size: 12px;
+    font-style: normal;
+    color: #333333;
+}
+
+.retweettime {
+    font-size: 10px;
     font-style: italic;
     color: #999999;
 }

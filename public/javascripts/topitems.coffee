@@ -9,6 +9,19 @@ $(()->
     }
   })
 
+  TopRetweets = Backbone.Model.extend({
+
+    defaults: {
+      items: { "text": "None", "count": 0, "user": "Unknown", "time": "None"} for num in [1..25]
+    }
+  })
+
+  TopNewsMatchers = Backbone.Model.extend({
+
+    defaults: {
+      items: { "description": "None", "count": 0, "percentage": 0, "total": 0} for num in [1..25]
+    }
+  })
 
   TopItemsView = Backbone.View.extend({
 
@@ -26,7 +39,14 @@ $(()->
       this.el.html ""
 
     renderItem: (item) ->
-      itemHtml = "<li><div class='norm'>#{item.title}<span class='count'>(#{item.count})</span></div><p class='linebreaker'>&nbsp;</p></li>"
+      itemHtml = """
+        <li>
+          <div class='norm'>#{item.title}
+            <span class='count'>(#{item.count})</span>
+          </div>
+          <p class='linebreaker'>&nbsp;</p>
+        </li>
+      """
       this.el.append itemHtml
 
     sync: (updatedSet)->
@@ -38,11 +58,97 @@ $(()->
 
   })
 
+  TopRetweetsView = Backbone.View.extend({
+
+    initialize: ->
+      _.bindAll this, "render", "sync"
+      this.topitems = new TopRetweets()
+      this.render()
+
+    render: ->
+      items = this.topitems.get "items"
+      this.clear()
+      this.renderItem item for item in items
+
+    clear: ->
+      this.el.html ""
+
+    renderItem: (item) ->
+      itemHtml = """
+        <li>
+          <div class='user'>#{item.user}
+            <span class='count'>(#{item.count})</span>
+            <br />
+            <span class='tweet'>#{item.text}</span>
+            <br />
+            <span class='retweettime'>#{item.time}</span>
+          </div>
+          <p class='linebreaker'>&nbsp;</p>
+        </li>
+      """
+      this.el.append itemHtml
+
+    sync: (updatedSet)->
+      this.topitems.set "items", updatedSet
+      this.render()
+
+    setElement: (element) ->
+      this.el = element
+
+  })
+
+  TopNewsMatchersView = Backbone.View.extend({
+
+      initialize: ->
+        _.bindAll this, "render", "sync"
+        this.topitems = new TopNewsMatchers()
+        this.render()
+
+      render: ->
+        items = this.topitems.get "items"
+        this.clear()
+        this.renderItem item for item in items
+
+      clear: ->
+        this.el.html ""
+
+      renderItem: (item) ->
+        percentsize = Math.round((item.percentage * 100) + 12)
+        console.log percentsize
+        #{ "description": "None", "count": 0, "percentage": 0, "total": 0}
+        itemHtml = """
+                <li>
+                  <div class='newstopic'>#{item.description}
+                    <span class='count'>(#{item.count})</span>
+                  </div>
+                  <div class='percentlinebg'>
+                    <span class='percentline' style='width: #{percentsize}px'>&nbsp;</span>
+                  </div>
+                  <table class='newsbottom' cellspacing='0' cellpadding='0'>
+                    <tr>
+                      <td class='percentvalue'>#{item.percentage}%</td>
+                      <td class='totaltweets'>#{item.total}</td>
+                    </tr>
+                  </table>
+                  <p class='linebreaker'>&nbsp;</p>
+                </li>
+              """
+        this.el.append itemHtml
+
+      sync: (updatedSet)->
+        this.topitems.set "items", updatedSet
+        this.render()
+
+      setElement: (element) ->
+        this.el = element
+
+  })
+
   window.opinionLeaderView = new TopItemsView({ el: $ "#topmentions" })
   window.topWordsView = new TopItemsView({ el: $ "#topwords" })
   window.topLocationsFromView = new TopItemsView({ el: $ "#toplocsfrom" })
   window.topLocationsAboutView = new TopItemsView({ el: $ "#toplocsabout" })
-  window.topTweetsView = new TopItemsView({ el: $ "#toptweets" })
-  window.topNewsView = new TopItemsView({ el: $ "#topnews" })
+  window.topRetweetsView = new TopRetweetsView({ el: $ "#toptweets" })
+  window.topNewsMatchersView = new TopNewsMatchersView({ el: $ "#topnews" })
 
 )

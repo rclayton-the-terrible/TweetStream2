@@ -81,6 +81,8 @@ app.listen(3000, function(){
             q.bind("pegasus", "com.berico.tweetstream.TwitterStreamMode")
             q.bind("pegasus", "com.berico.tweetstream.Tweet");
             q.bind("pegasus", "com.berico.tweetstream.wordcount.TopNWords");
+            q.bind("pegasus", "com.berico.tweetstream.retweet.TopRetweets");
+            q.bind("pegasus", "com.berico.tweetstream.handlers.TopicMatchAggregateSet");
 
             var tweetReceivedCount = 0;
 
@@ -90,14 +92,14 @@ app.listen(3000, function(){
 
                     if(headers["pegasus.eventbus.event.topic"] == "com.berico.tweetstream.Tweet"){
 
-                        if((++tweetReceivedCount % 50) == 0){
+                        if((++tweetReceivedCount % 100) == 0){
 
-                            console.log("Another 50 'com.berico.tweetstream.Tweet' received");
+                            console.log("RECEIVED: x100 com.berico.tweetstream.Tweet");
                         }
 
                     } else {
 
-                        console.log(headers["pegasus.eventbus.event.topic"]);
+                        console.log("RECEIVED: " + headers["pegasus.eventbus.event.topic"]);
                     }
 
 
