@@ -1,30 +1,35 @@
 div.span-16.h450
     div.span-7 &nbsp;
-    div.span-8.modehost
-        div#clocktime FRIDAY MAR 22 - 10:15PM
+    div.span-5#clocktime FRIDAY MAR 22 - 10:15PM
+    div.span-3#streamstate LIVE
+    div.span-15 &nbsp;
+    div.span-11 &nbsp;
+    div.modehost.span-4
         div#modestatic MODE
         div#modetitle FILTER
     div.span-15.h36 &nbsp;
     div.span-2.h260 &nbsp;
-    div.span-5.h260 &nbsp;
-    div.span-4.h260
+    div.span-9.h260
         div.filterheader KEYWORDS:
+        br
         div#filterkeywords.filterparams
-            | Libya Ghadfi
-            br
-            | Mauritana
-            br
-            | Romney Election
-            br
-            | Tuber Bomber
-            br
-            | Chinese Economic Forum
-            br
-            | Horn of Africa
-            br
-            | US Aid to Mali
+            span#filterscol1.span-4
+                | Libya Ghadfi
+                br
+                | Mauritana
+                br
+                | Romney Election
+                br
+                | Tuber Bomber
+            span#filterscol2.span-4
+                | Chinese Economic Forum
+                br
+                | Horn of Africa
+                br
+                | US Aid to Mali
     div.span-4.h260
         div.filterheader LOCATIONS:
+        br
         div#filterlocations.filterparams
             | Bounding Box 1
             br
@@ -36,21 +41,20 @@ div.span-16.maphost
     div.mapcontent
         div.mapbanner
             span TWEETS ABOUT
-        div#mapabout.map
+        div#mapabout.map(style='position: relative; top: 20px; left: 20px;')
     img(src='/images/bigshadow.png',alt='')
 
 div.span-16.maphost
     div.mapcontent
         div.mapbanner
             span TWEETS FROM
-        div#mapfrom.map
+        div#mapfrom.map(style='position: relative; top: 20px; left: 20px;')
     img(src='/images/bigshadow.png',alt='')
 
 div(style='clear: both') &nbsp;
 
 div.padl.span-8
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP NEWS INTERESTS
         div.section
@@ -59,7 +63,6 @@ div.padl.span-8
 
 div.span-8
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP OPINION LEADERS
         div.section
@@ -68,7 +71,6 @@ div.span-8
 
 div.span-8
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP RE-TWEETS
         div.section
@@ -77,7 +79,6 @@ div.span-8
 
 div.span-8
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP KEYWORDS
         div.section
@@ -86,7 +87,6 @@ div.span-8
 
 div.span-8
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP TWEETS FROM
         div.section
@@ -95,7 +95,6 @@ div.span-8
 
 div.span-8.last
     div.boxd.h520
-        img(src='/images/ribbon.png',alt='')
         div.smlbanner
             | TOP TWEETS ABOUT
         div.section

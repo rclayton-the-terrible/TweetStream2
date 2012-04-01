@@ -23,6 +23,13 @@ $(()->
     }
   })
 
+  TopLocations = Backbone.Model.extend({
+
+    defaults: {
+      items: { "country": "None", "cc": "Unknown", "count": 0 } for num in [1..25]
+    }
+  })
+
   TopItemsView = Backbone.View.extend({
 
     initialize: ->
@@ -114,7 +121,7 @@ $(()->
 
       renderItem: (item) ->
         percentsize = Math.round((item.percentage * 100) + 12)
-        console.log percentsize
+
         #{ "description": "None", "count": 0, "percentage": 0, "total": 0}
         itemHtml = """
                 <li>
@@ -144,10 +151,46 @@ $(()->
 
   })
 
+  TopLocationsView = Backbone.View.extend({
+
+      initialize: ->
+        _.bindAll this, "render", "sync"
+        this.topitems = new TopLocations()
+        this.render()
+
+      render: ->
+        items = this.topitems.get "items"
+        this.clear()
+        this.renderItem item for item in items
+
+      clear: ->
+        this.el.html ""
+
+      #{ "country": "None", "cc": "Unknown", "count": 0 }
+      renderItem: (item) ->
+        itemHtml = """
+          <li>
+            <div class='newstopic'>#{item.country} (#{item.cc})
+            &nbsp;&nbsp;<span class='count'>(#{item.count})</span>
+            </div>
+            <p class='linebreaker'>&nbsp;</p>
+          </li>
+        """
+        this.el.append itemHtml
+
+      sync: (updatedSet)->
+        this.topitems.set "items", updatedSet
+        this.render()
+
+      setElement: (element) ->
+        this.el = element
+
+    })
+
   window.opinionLeaderView = new TopItemsView({ el: $ "#topmentions" })
   window.topWordsView = new TopItemsView({ el: $ "#topwords" })
-  window.topLocationsFromView = new TopItemsView({ el: $ "#toplocsfrom" })
-  window.topLocationsAboutView = new TopItemsView({ el: $ "#toplocsabout" })
+  window.topLocationsFromView = new TopLocationsView({ el: $ "#toplocsfrom" })
+  window.topLocationsAboutView = new TopLocationsView({ el: $ "#toplocsabout" })
   window.topRetweetsView = new TopRetweetsView({ el: $ "#toptweets" })
   window.topNewsMatchersView = new TopNewsMatchersView({ el: $ "#topnews" })
 

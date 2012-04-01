@@ -1,19 +1,34 @@
 
 $(function(){
-           var myOptions = {
-                 center: new google.maps.LatLng(39.75, -104.87),
-                 zoom: 2,
-                 mapTypeId: google.maps.MapTypeId.ROADMAP
-           };
-           window.mapabout = new google.maps.Map(document.getElementById("mapabout"), myOptions);
-           window.mapfrom = new google.maps.Map(document.getElementById("mapfrom"), myOptions);
 
-           //drawChart("topchart1");
-           //drawChart("topchart2");
-           //drawChart("topchart3");
-           //drawChart("topchart4");
-           //drawChart("topchart5");
-       });
+       /*
+       window.haveMaps = true;
+
+       try {
+
+       var myOptions = {
+            center: new google.maps.LatLng(39.75, -104.87),
+            zoom: 2,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+      };
+
+       window.mapabout = new google.maps.Map(document.getElementById("mapabout"), myOptions);
+       window.mapfrom = new google.maps.Map(document.getElementById("mapfrom"), myOptions);
+
+       } catch (e){
+
+           window.haveMaps = false;
+
+           $("#mapabout").html("<h2>Sorry Could Not Connect to Google Maps.</h2>");
+           $("#mapfrom").html("<h2>Sorry Could Not Connect to Google Maps.</h2>");
+       }
+       */
+       //drawChart("topchart1");
+       //drawChart("topchart2");
+       //drawChart("topchart3");
+       //drawChart("topchart4");
+       //drawChart("topchart5");
+   });
 
 function drawChart(element){
     return new Highcharts.Chart({

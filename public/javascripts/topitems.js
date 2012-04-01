@@ -1,7 +1,7 @@
 (function() {
 
   $(function() {
-    var TopItems, TopItemsView, TopNewsMatchers, TopNewsMatchersView, TopRetweets, TopRetweetsView, num;
+    var TopItems, TopItemsView, TopLocations, TopLocationsView, TopNewsMatchers, TopNewsMatchersView, TopRetweets, TopRetweetsView, num;
     TopItems = Backbone.Model.extend({
       defaults: {
         items: (function() {
@@ -45,6 +45,22 @@
               "count": 0,
               "percentage": 0,
               "total": 0
+            });
+          }
+          return _results;
+        })()
+      }
+    });
+    TopLocations = Backbone.Model.extend({
+      defaults: {
+        items: (function() {
+          var _results;
+          _results = [];
+          for (num = 1; num <= 25; num++) {
+            _results.push({
+              "country": "None",
+              "cc": "Unknown",
+              "count": 0
             });
           }
           return _results;
@@ -140,8 +156,40 @@
       renderItem: function(item) {
         var itemHtml, percentsize;
         percentsize = Math.round((item.percentage * 100) + 12);
-        console.log(percentsize);
         itemHtml = "<li>\n  <div class='newstopic'>" + item.description + "\n    <span class='count'>(" + item.count + ")</span>\n  </div>\n  <div class='percentlinebg'>\n    <span class='percentline' style='width: " + percentsize + "px'>&nbsp;</span>\n  </div>\n  <table class='newsbottom' cellspacing='0' cellpadding='0'>\n    <tr>\n      <td class='percentvalue'>" + item.percentage + "%</td>\n      <td class='totaltweets'>" + item.total + "</td>\n    </tr>\n  </table>\n  <p class='linebreaker'>&nbsp;</p>\n</li>";
+        return this.el.append(itemHtml);
+      },
+      sync: function(updatedSet) {
+        this.topitems.set("items", updatedSet);
+        return this.render();
+      },
+      setElement: function(element) {
+        return this.el = element;
+      }
+    });
+    TopLocationsView = Backbone.View.extend({
+      initialize: function() {
+        _.bindAll(this, "render", "sync");
+        this.topitems = new TopLocations();
+        return this.render();
+      },
+      render: function() {
+        var item, items, _i, _len, _results;
+        items = this.topitems.get("items");
+        this.clear();
+        _results = [];
+        for (_i = 0, _len = items.length; _i < _len; _i++) {
+          item = items[_i];
+          _results.push(this.renderItem(item));
+        }
+        return _results;
+      },
+      clear: function() {
+        return this.el.html("");
+      },
+      renderItem: function(item) {
+        var itemHtml;
+        itemHtml = "<li>\n  <div class='newstopic'>" + item.country + " (" + item.cc + ")\n  &nbsp;&nbsp;<span class='count'>(" + item.count + ")</span>\n  </div>\n  <p class='linebreaker'>&nbsp;</p>\n</li>";
         return this.el.append(itemHtml);
       },
       sync: function(updatedSet) {
@@ -158,10 +206,10 @@
     window.topWordsView = new TopItemsView({
       el: $("#topwords")
     });
-    window.topLocationsFromView = new TopItemsView({
+    window.topLocationsFromView = new TopLocationsView({
       el: $("#toplocsfrom")
     });
-    window.topLocationsAboutView = new TopItemsView({
+    window.topLocationsAboutView = new TopLocationsView({
       el: $("#toplocsabout")
     });
     window.topRetweetsView = new TopRetweetsView({

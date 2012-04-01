@@ -13,33 +13,34 @@ $(()->
   )
 
   socket.on("com.berico.tweetstream.wordcount.TopNWords", (data) ->
-
     topN = $.parseJSON data
-
     listOfWords = transformToObject topN
-
     switch topN.source
        when "tweet.words" then window.topWordsView.sync(listOfWords)
        when "tweet.mentioned" then window.opinionLeaderView.sync(listOfWords)
   )
 
   socket.on("com.berico.tweetstream.retweet.TopRetweets", (data) ->
-
       retweetContainer = $.parseJSON data
-
       sortedRetweets = transformRetweets retweetContainer
-      console.dir sortedRetweets
       window.topRetweetsView.sync sortedRetweets
-    )
+  )
 
   socket.on("com.berico.tweetstream.handlers.TopicMatchAggregateSet", (data) ->
-
     aggregateSet = $.parseJSON data
-
     sortedAggregates = transformAggregates aggregateSet
-    console.dir sortedAggregates
-
     window.topNewsMatchersView.sync sortedAggregates
+  )
+
+  socket.on("com.berico.tweetstream.geo.TopNCountries", (data) ->
+    topNCountries = $.parseJSON data
+    sortedTopCountries = transformTopCountries topNCountries
+    switch topNCountries.source
+      when "mention.locations" then window.topLocationsAboutView.sync(sortedTopCountries)
+      when "all.mention.locations" then updateMap sortedTopCountries, window.mapabout, "#f3d686", "#fd2d06"
+      when "user.locations" then window.topLocationsFromView.sync(sortedTopCountries)
+      when "all.user.locations" then updateMap sortedTopCountries, window.mapfrom, "#bef8eb", "#270bf9"
+
   )
 
   updateClockTime = (tweet) ->
@@ -47,24 +48,30 @@ $(()->
 
   updateTwitterMode = (twitterMode) ->
     ($ "#modetitle").html twitterMode.mode.toUpperCase()
-    $keywords = ($ "#filterkeywords")
+    $keywords1 = ($ "#filterscol1")
+    $keywords2 = ($ "#filterscol2")
     $locations = ($ "#filterlocations")
+    $streamstate = ($ "#streamstate")
+    $streamstate.html twitterMode.state.toUpperCase()
 
     if twitterMode.mode is "Sample"
-      $keywords.html "2% of all Tweets"
+      $keywords1.html "2% of all Tweets"
+      $keywords2.html ""
       $locations.html "Entire Globe"
 
     else
-      $keywords.html ""
+      $keywords1.html ""
+      $keywords2.html ""
       $locations.html ""
 
       count = 0
 
       for keyword in twitterMode.keywords
         count++
-        if count < 10 then $keywords.append "#{keyword}<br />"
-
-      if count >= 11 then $keywords.append "..."
+        if (count % 2) == 0
+          $keywords1.append "#{keyword}<br />"
+        else
+          $keywords2.append "#{keyword}<br />"
 
       $locations.append("Bounding Box 1<br />")
 
@@ -80,6 +87,11 @@ $(()->
         lat = limit(location[1] + "")
         $locations.append "#{lat}, #{lon}<br />"
 
+  updateMap = (countries, map, minColor, maxColor) ->
+    normcountries = changeBaseToMaxValueAsOne countries
+    carray = flattenToArray normcountries
+    updateColors(map, carray, minColor, maxColor)
+
   transformRetweets = (retweetContainer) ->
     rows = []
     for tweet in retweetContainer.topRetweets
@@ -92,7 +104,6 @@ $(()->
       rows.push { title: w, count: c }
     sortByCountDescending rows
 
-    #{ "description": "None", "count": 0, "percentage": 0, "total": 0}
   transformAggregates = (aggregateContainer) ->
     rows = []
     for aggregate in aggregateContainer.topicMatchAggregates
@@ -102,6 +113,29 @@ $(()->
         total: aggregate.numberOfItemsSeen,
         percentage: calculatePercentage(aggregate) }
     sortByCountDescending rows
+
+  transformTopCountries = (topCountriesContainer) ->
+    rows = []
+    for country in topCountriesContainer.topCountries
+      rows.push {
+          country: country.country
+          cc: country.countryCode
+          count: country.count
+      }
+    sortByCountDescending rows
+
+  changeBaseToMaxValueAsOne = (sortedList) ->
+    maxvalue = sortedList[0].count
+    for item in sortedList
+      item.norm = (item.count / maxvalue)
+    sortedList
+
+  flattenToArray = (countries) ->
+    rows = {}
+    for cntry in countries
+      #alert "#{cntry.cc} = #{cntry.norm}"
+      rows[cntry.cc] = cntry.norm
+    rows
 
   calculatePercentage = (aggregate) ->
     denominator = if aggregate.numberOfItemsSeen > 0 then aggregate.numberOfItemsSeen else -1
@@ -115,6 +149,5 @@ $(()->
   sortByCountDescending = (rows) ->
     _.sortBy(rows, (row) ->
             row.count * -1)
-
 
 )

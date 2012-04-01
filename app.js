@@ -5,6 +5,7 @@
 
 var express = require('express')
   , routes = require('./routes')
+  , httpProxy = require('http-proxy')
   , amqp = require('amqp')
   , MemoryStore = express.session.MemoryStore
   , sessionStore = new MemoryStore()
@@ -27,6 +28,8 @@ app.configure(function(){
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
 });
+
+var proxy = new httpProxy.HttpProxy({ target: { host: "localhost", port: 8000 }});
 
 io.set('log level', 1)
 io.set('authorization', function (data, accept) {
@@ -58,6 +61,14 @@ app.configure('production', function(){
 });
 
 // Routes
+app.all("/x/*", function(req, res){
+    console.log("Proxying Request");
+    req.url = req.url.substring(2);
+    console.log(req.url)
+
+    proxy.proxyRequest(req, res);
+});
+
 
 app.get('/', routes.index);
 
@@ -72,41 +83,58 @@ app.listen(3000, function(){
               console.log("New WebSocket Client Connected!");
         });
 
-        var queue_name = "web-front-end";
+            var qtweets = connection.queue("web-front-end--tweets", { exclusive: true }, function(){
+                qtweets.bind("pegasus", "com.berico.tweetstream.Tweet");
 
-            console.log("Registering Queue: " + queue_name);
+                var tweetReceivedCount = 0;
 
-            var q = connection.queue(queue_name, { exclusive: true }, function(){
-
-            q.bind("pegasus", "com.berico.tweetstream.TwitterStreamMode")
-            q.bind("pegasus", "com.berico.tweetstream.Tweet");
-            q.bind("pegasus", "com.berico.tweetstream.wordcount.TopNWords");
-            q.bind("pegasus", "com.berico.tweetstream.retweet.TopRetweets");
-            q.bind("pegasus", "com.berico.tweetstream.handlers.TopicMatchAggregateSet");
-
-            var tweetReceivedCount = 0;
-
-            q.subscribe(
-                {ack:true},
-                function(message, headers, deliveryInfo){
-
-                    if(headers["pegasus.eventbus.event.topic"] == "com.berico.tweetstream.Tweet"){
-
+                qtweets.subscribe(
+                    {ack:true},
+                    function(message, headers, deliveryInfo){
                         if((++tweetReceivedCount % 100) == 0){
-
                             console.log("RECEIVED: x100 com.berico.tweetstream.Tweet");
                         }
+                        io.sockets.emit(headers["pegasus.eventbus.event.topic"], message.data.toString());
+                        qtweets.shift();
+                    });
+            });
 
-                    } else {
-
-                        console.log("RECEIVED: " + headers["pegasus.eventbus.event.topic"]);
-                    }
-
-
+            var qstreammode = connection.queue("web-front-end--streammode", {exclusive: true}, function(){
+                qstreammode.bind("pegasus", "com.berico.tweetstream.TwitterStreamMode")
+                qstreammode.subscribe(
+                {ack:true},
+                function(message, headers, deliveryInfo){
+                    console.log("RECEIVED: " + headers["pegasus.eventbus.event.topic"]);
                     io.sockets.emit(headers["pegasus.eventbus.event.topic"], message.data.toString());
-                    q.shift();
+                    qstreammode.shift();
                 });
             });
+
+            var qanalytics = connection.queue("web-front-end--analytics", {exclusive: true}, function(){
+                qanalytics.bind("pegasus", "com.berico.tweetstream.wordcount.TopNWords");
+                qanalytics.bind("pegasus", "com.berico.tweetstream.retweet.TopRetweets");
+                qanalytics.bind("pegasus", "com.berico.tweetstream.handlers.TopicMatchAggregateSet");
+                qanalytics.subscribe(
+                {ack:true},
+                function(message, headers, deliveryInfo){
+                    console.log("RECEIVED: " + headers["pegasus.eventbus.event.topic"]);
+                    io.sockets.emit(headers["pegasus.eventbus.event.topic"], message.data.toString());
+                    qanalytics.shift();
+                });
+            });
+
+            var qgeo = connection.queue("web-font-end--geo", {exclusive: true}, function(){
+                qgeo.bind("pegasus", "com.berico.tweetstream.geo.TopNCountries");
+                qgeo.subscribe(
+                    {ack:true},
+                    function(message, headers, deliveryInfo){
+                        console.log("RECEIVED: " + headers["pegasus.eventbus.event.topic"]);
+                        io.sockets.emit(headers["pegasus.eventbus.event.topic"], message.data.toString());
+                        qgeo.shift();
+                    }
+                );
+            });
+
 
         console.log("AQMP Connection Ready");
     });

@@ -2,7 +2,7 @@
 .bodyoverride {
     height: 1080px;
     width: 1920px;
-    background-image: url(/images/twitterbcg.jpeg);
+    background-image: url(/images/twitterbcg2.jpg);
     background-color: #dfdfdf;
     background-repeat: no-repeat;
     font-family: Helvetica;
@@ -33,38 +33,48 @@
 	background: rgba(255,0,0,0.4);
 }
 
-.modehost {
-    margin-top: 28px;
+#clocktime {
+    font-size: 12px;
+    margin-top: 14px;
+    color: #777777;
+    font-weight: bold;
+}
+
+#streamstate {
+    text-align: center;
+    display: inline;
+    font-size: 14px;
+    margin-left: 10px;
+    margin-top: 10px;
+    color: #555555;
+    font-weight: bold;
 }
 
 #modestatic {
-    margin-top: 6px;
+    margin-top: 28px;
     margin-left: 10px;
-    font-size: 18px;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 12px;
 }
 
 #modetitle {
-    line-height: 48px;
-    font-size: 72px;
+    margin-left: 6px;
+    line-height: 32px;
+    font-size: 32px;
     font-style: italic;
     font-family: "Times New Roman";
-    text-shadow: -1px -1px #666, 1px 1px #FFF;
-}
-
-#clocktime {
-    width: 100%;
-    text-align: right;
-    color: #ffffff;
-    font-size: 14px;
+    /* text-shadow: -1px -1px #666, 1px 1px #FFF;   */
 }
 
 .filterheader {
-    font-size: 16px;
-    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    color: #2ca8d5;
 }
 
 .filterparams {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
 }
 
@@ -113,8 +123,9 @@
     margin-top: 24px;
     overflow-y: scroll;
     overflow-wrap: break-word;
-    height: 418px;
+    height: 436px;
     border-bottom: none;
+    overflow-x: hidden;
 }
 
 .section ol {
@@ -261,6 +272,7 @@
 .h450 { height: 450px; }
 .h500 { height: 500px; }
 .h520 { height: 520px; }
+.h540 { height: 540px; }
 .h600 { height: 600px; }
 .h700 { height: 700px; }
 .h800 { height: 800px; }

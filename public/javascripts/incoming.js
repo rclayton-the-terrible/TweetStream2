@@ -1,7 +1,7 @@
 (function() {
 
   $(function() {
-    var calculatePercentage, limit, socket, sortByCountDescending, transformAggregates, transformRetweets, transformToObject, updateClockTime, updateTwitterMode;
+    var calculatePercentage, changeBaseToMaxValueAsOne, flattenToArray, limit, socket, sortByCountDescending, transformAggregates, transformRetweets, transformToObject, transformTopCountries, updateClockTime, updateMap, updateTwitterMode;
     window.socket = socket = io.connect("http://localhost:3000");
     socket.on("com.berico.tweetstream.TwitterStreamMode", function(data) {
       var twitterMode;
@@ -28,38 +28,59 @@
       var retweetContainer, sortedRetweets;
       retweetContainer = $.parseJSON(data);
       sortedRetweets = transformRetweets(retweetContainer);
-      console.dir(sortedRetweets);
       return window.topRetweetsView.sync(sortedRetweets);
     });
     socket.on("com.berico.tweetstream.handlers.TopicMatchAggregateSet", function(data) {
       var aggregateSet, sortedAggregates;
       aggregateSet = $.parseJSON(data);
       sortedAggregates = transformAggregates(aggregateSet);
-      console.dir(sortedAggregates);
       return window.topNewsMatchersView.sync(sortedAggregates);
+    });
+    socket.on("com.berico.tweetstream.geo.TopNCountries", function(data) {
+      var sortedTopCountries, topNCountries;
+      topNCountries = $.parseJSON(data);
+      sortedTopCountries = transformTopCountries(topNCountries);
+      switch (topNCountries.source) {
+        case "mention.locations":
+          return window.topLocationsAboutView.sync(sortedTopCountries);
+        case "all.mention.locations":
+          return updateMap(sortedTopCountries, window.mapabout, "#f3d686", "#fd2d06");
+        case "user.locations":
+          return window.topLocationsFromView.sync(sortedTopCountries);
+        case "all.user.locations":
+          return updateMap(sortedTopCountries, window.mapfrom, "#bef8eb", "#270bf9");
+      }
     });
     updateClockTime = function(tweet) {
       return ($("#clocktime")).html(tweet.timeOfTweet);
     };
     updateTwitterMode = function(twitterMode) {
-      var $keywords, $locations, count, even, keyword, lat, location, lon, setName, _i, _j, _len, _len2, _ref, _ref2, _results;
+      var $keywords1, $keywords2, $locations, $streamstate, count, even, keyword, lat, location, lon, setName, _i, _j, _len, _len2, _ref, _ref2, _results;
       ($("#modetitle")).html(twitterMode.mode.toUpperCase());
-      $keywords = $("#filterkeywords");
+      $keywords1 = $("#filterscol1");
+      $keywords2 = $("#filterscol2");
       $locations = $("#filterlocations");
+      $streamstate = $("#streamstate");
+      $streamstate.html(twitterMode.state.toUpperCase());
       if (twitterMode.mode === "Sample") {
-        $keywords.html("2% of all Tweets");
+        $keywords1.html("2% of all Tweets");
+        $keywords2.html("");
         return $locations.html("Entire Globe");
       } else {
-        $keywords.html("");
+        $keywords1.html("");
+        $keywords2.html("");
         $locations.html("");
         count = 0;
         _ref = twitterMode.keywords;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           keyword = _ref[_i];
           count++;
-          if (count < 10) $keywords.append("" + keyword + "<br />");
+          if ((count % 2) === 0) {
+            $keywords1.append("" + keyword + "<br />");
+          } else {
+            $keywords2.append("" + keyword + "<br />");
+          }
         }
-        if (count >= 11) $keywords.append("...");
         $locations.append("Bounding Box 1<br />");
         count = 0;
         _ref2 = twitterMode.locations;
@@ -79,6 +100,12 @@
         }
         return _results;
       }
+    };
+    updateMap = function(countries, map, minColor, maxColor) {
+      var carray, normcountries;
+      normcountries = changeBaseToMaxValueAsOne(countries);
+      carray = flattenToArray(normcountries);
+      return updateColors(map, carray, minColor, maxColor);
     };
     transformRetweets = function(retweetContainer) {
       var rows, tweet, _i, _len, _ref;
@@ -122,6 +149,38 @@
         });
       }
       return sortByCountDescending(rows);
+    };
+    transformTopCountries = function(topCountriesContainer) {
+      var country, rows, _i, _len, _ref;
+      rows = [];
+      _ref = topCountriesContainer.topCountries;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        country = _ref[_i];
+        rows.push({
+          country: country.country,
+          cc: country.countryCode,
+          count: country.count
+        });
+      }
+      return sortByCountDescending(rows);
+    };
+    changeBaseToMaxValueAsOne = function(sortedList) {
+      var item, maxvalue, _i, _len;
+      maxvalue = sortedList[0].count;
+      for (_i = 0, _len = sortedList.length; _i < _len; _i++) {
+        item = sortedList[_i];
+        item.norm = item.count / maxvalue;
+      }
+      return sortedList;
+    };
+    flattenToArray = function(countries) {
+      var cntry, rows, _i, _len;
+      rows = {};
+      for (_i = 0, _len = countries.length; _i < _len; _i++) {
+        cntry = countries[_i];
+        rows[cntry.cc] = cntry.norm;
+      }
+      return rows;
     };
     calculatePercentage = function(aggregate) {
       var denominator, numerator, value;
